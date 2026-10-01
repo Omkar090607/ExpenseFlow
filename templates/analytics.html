@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Analytics · ExpenseFlow{% endblock %}
+{% block content %}
+<h3 class="mb-3">Analytics</h3>
+<div class="ef-card p-3 mb-3">
+  <ul class="nav nav-pills mb-3">
+    {% for id,l in [("t1","By Category"),("t2","Monthly"),("t3","Daily")] %}<li class="nav-item"><button class="nav-link {{ 'active' if loop.first }}" data-bs-toggle="pill" data-bs-target="#{{ id }}">{{ l }}</button></li>{% endfor %}
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="t1"><div style="max-width:420px;margin:auto"><canvas id="catChart"></canvas></div></div>
+    <div class="tab-pane fade" id="t2"><canvas id="monthChart" height="110"></canvas></div>
+    <div class="tab-pane fade" id="t3"><canvas id="dayChart" height="110"></canvas></div>
+  </div>
+</div>
+<div class="ef-card p-3"><h5>This month by category</h5>
+  {% for c, v in s.categories|dictsort(false, 'value')|reverse %}
+  <div class="d-flex justify-content-between small mt-2"><span>{{ c }}</span><span>₹{{ "{:,.0f}".format(v) }} · {{ "%.0f"|format(v / s.this_month * 100) }}%</span></div>
+  <div class="progress" style="height:8px"><div class="progress-bar" style="width:{{ v / s.this_month * 100 }}%"></div></div>
+  {% else %}<p class="text-secondary mb-0">No expenses this month.</p>{% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>window.SUMMARY = {{ s|tojson }};</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

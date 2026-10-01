@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Expenses · ExpenseFlow{% endblock %}
+{% block content %}
+<div class="card ef-card p-3 mb-3">
+  <h5>Add Expense</h5>
+  <form method="post" class="row g-2"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-6 col-md-2"><input type="number" step="0.01" min="0.01" name="amount" class="form-control" placeholder="Amount ₹" required></div>
+    <div class="col-6 col-md-2"><select name="category" class="form-select">{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select></div>
+    <div class="col-12 col-md-3"><input name="description" maxlength="200" class="form-control" placeholder="Description"></div>
+    <div class="col-6 col-md-2"><select name="payment_method" class="form-select">{% for p in payments %}<option>{{ p }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><input type="date" name="date" value="{{ today }}" class="form-control" required></div>
+    <div class="col-12 col-md-1"><button class="btn btn-primary w-100">Add</button></div>
+  </form>
+</div>
+
+<div class="card ef-card p-3 mb-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-6 col-md-2"><label class="small">Search</label><input name="q" value="{{ request.args.q or '' }}" class="form-control form-control-sm"></div>
+    <div class="col-6 col-md-2"><label class="small">Category</label><select name="category" class="form-select form-select-sm"><option value="">All</option>{% for c in categories %}<option {{ 'selected' if request.args.category == c }}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="small">Payment</label><select name="payment_method" class="form-select form-select-sm"><option value="">All</option>{% for p in payments %}<option {{ 'selected' if request.args.payment_method == p }}>{{ p }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="small">From</label><input type="date" name="from" value="{{ request.args['from'] or '' }}" class="form-control form-control-sm"></div>
+    <div class="col-6 col-md-2"><label class="small">To</label><input type="date" name="to" value="{{ request.args.to or '' }}" class="form-control form-control-sm"></div>
+    <div class="col-3 col-md-1"><label class="small">Min ₹</label><input type="number" name="min" value="{{ request.args.min or '' }}" class="form-control form-control-sm"></div>
+    <div class="col-3 col-md-1"><label class="small">Max ₹</label><input type="number" name="max" value="{{ request.args.max or '' }}" class="form-control form-control-sm"></div>
+    <div class="col-12"><button class="btn btn-sm btn-outline-primary">Filter</button> <a href="{{ url_for('expenses') }}" class="btn btn-sm btn-link">Reset</a></div>
+  </form>
+</div>
+
+<div class="card ef-card p-3">
+  <div class="d-flex justify-content-between mb-2"><h5 class="mb-0">{{ items|length }} expense(s)</h5><strong>Total: ₹{{ "{:,.2f}".format(total) }}</strong></div>
+  <div class="table-responsive">
+  <table class="table align-middle">
+    <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Payment</th><th class="text-end">Amount</th><th></th></tr></thead>
+    <tbody>
+    {% for e in items %}
+    <tr>
+      <td>{{ e.date.strftime("%d-%m-%Y") }}</td><td><span class="badge bg-secondary">{{ e.category }}</span></td>
+      <td>{{ e.description }}</td><td>{{ e.payment_method }}</td><td class="text-end">₹{{ "{:,.2f}".format(e.amount) }}</td>
+      <td class="text-end text-nowrap">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#edit{{ e.id }}">Edit</button>
+        <form method="post" action="{{ url_for('delete_expense', eid=e.id) }}" class="d-inline" onsubmit="return confirm('Delete this expense?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger">Delete</button></form>
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="6" class="text-center text-muted py-4">No expenses found.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+
+{% for e in items %}
+<div class="modal fade" id="edit{{ e.id }}" tabindex="-1"><div class="modal-dialog"><form method="post" action="{{ url_for('edit_expense', eid=e.id) }}" class="modal-content"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="modal-header"><h5 class="modal-title">Edit Expense</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body row g-2">
+    <div class="col-6"><label class="small">Amount</label><input type="number" step="0.01" min="0.01" name="amount" value="{{ e.amount }}" class="form-control" required></div>
+    <div class="col-6"><label class="small">Date</label><input type="date" name="date" value="{{ e.date.isoformat() }}" class="form-control" required></div>
+    <div class="col-6"><label class="small">Category</label><select name="category" class="form-select">{% for c in categories %}<option {{ 'selected' if c == e.category }}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="col-6"><label class="small">Payment</label><select name="payment_method" class="form-select">{% for p in payments %}<option {{ 'selected' if p == e.payment_method }}>{{ p }}</option>{% endfor %}</select></div>
+    <div class="col-12"><label class="small">Description</label><input name="description" value="{{ e.description }}" maxlength="200" class="form-control"></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-primary">Save changes</button></div>
+</form></div></div>
+{% endfor %}
+{% endblock %}

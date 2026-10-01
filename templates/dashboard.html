@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · ExpenseFlow{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><h3 class="mb-0">Hello, {{ current_user.name.split()[0] }} 👋</h3><div class="text-secondary">Here's your spending overview</div></div>
+  <a href="{{ url_for('expenses') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add expense</a>
+</div>
+<div class="row g-3 mb-4">
+{% for label,val,ic in [("Total Expenses",s.total,"bi-cash-stack"),("This Month",s.this_month,"bi-calendar-month"),("Today",s.today,"bi-sun"),("Highest Expense",s.highest,"bi-trophy")] %}
+  <div class="col-6 col-xl-3"><div class="ef-card tilt stat p-3"><i class="bi {{ ic }} ic"></i><div class="small text-secondary">{{ label }}</div><div class="v fs-3 fw-bold">₹{{ "{:,.0f}".format(val) }}</div></div></div>
+{% endfor %}
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-lg-6"><div class="ef-card p-3 h-100 d-flex flex-column">
+    <h5><i class="bi bi-bullseye"></i> Monthly Budget</h5>
+    {% if s.budget %}{% set pct = (s.this_month / s.budget * 100) %}
+      <div class="d-flex justify-content-between small"><span>Spent ₹{{ "{:,.0f}".format(s.this_month) }}</span><span>Budget ₹{{ "{:,.0f}".format(s.budget) }}</span></div>
+      <div class="progress my-2" style="height:14px"><div class="progress-bar {{ 'bg-danger' if pct >= 100 else 'bg-warning' if pct >= 80 else 'bg-success' }}" style="width:{{ [pct,100]|min }}%"></div></div>
+      {% if pct >= 100 %}<div class="alert alert-danger py-2">⚠️ Over budget by ₹{{ "{:,.0f}".format(-s.remaining) }}.</div>
+      {% elif pct >= 80 %}<div class="alert alert-warning py-2">⚠️ {{ "%.0f"|format(pct) }}% used. ₹{{ "{:,.0f}".format(s.remaining) }} left.</div>
+      {% else %}<div class="small text-secondary mb-2">Remaining: ₹{{ "{:,.0f}".format(s.remaining) }}</div>{% endif %}
+    {% else %}<p class="text-secondary">No budget set for this month.</p>{% endif %}
+    <form method="post" action="{{ url_for('set_budget') }}" class="input-group mt-auto"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><span class="input-group-text">₹</span><input type="number" min="1" name="amount" class="form-control" placeholder="Set monthly budget" required><button class="btn btn-primary">Save</button></form>
+  </div></div>
+  <div class="col-lg-6"><div class="ef-card p-3 h-100"><h5>💡 Spending Insights</h5><ul class="mb-0">{% for m in s.insights %}<li class="mb-1">{{ m }}</li>{% endfor %}</ul></div></div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-lg-5"><div class="ef-card p-3"><h6>By Category (this month)</h6><canvas id="catChart"></canvas></div></div>
+  <div class="col-lg-7"><div class="ef-card p-3"><h6>Monthly Expenses</h6><canvas id="monthChart"></canvas></div></div>
+</div>
+<div class="ef-card p-3"><div class="d-flex justify-content-between"><h5>Recent expenses</h5><a href="{{ url_for('expenses') }}">View all →</a></div>
+  <div class="table-responsive"><table class="table align-middle mb-0"><tbody>
+  {% for e in recent %}<tr><td>{{ e.date.strftime("%d %b") }}</td><td><span class="badge bg-secondary">{{ e.category }}</span></td><td>{{ e.description }}</td><td class="text-end">₹{{ "{:,.0f}".format(e.amount) }}</td></tr>
+  {% else %}<tr><td class="text-secondary text-center py-3">No expenses yet — add your first one!</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>window.SUMMARY = {{ s|tojson }};</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

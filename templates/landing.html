@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="row align-items-center g-4 py-4">
+  <div class="col-lg-6">
+    <h1 class="display-4 fw-bold">Take control of <span class="grad">every rupee</span></h1>
+    <p class="lead text-secondary">Record expenses, set budgets, and see beautiful analytics of where your money goes — all in one secure dashboard.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Start free</a><a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Login</a>
+  </div>
+  <div class="col-lg-6 hero"><div class="stack"><div></div><div></div><div><div class="lbl">This month</div><div class="amt">₹12,450</div><div class="rows">🍔 Food ₹2,000<br>🚆 Travel ₹1,200<br>🛍️ Shopping ₹800</div></div></div></div>
+</section>
+<section class="row g-3 pb-5">
+  {% for i,t,d in [("bi-shield-lock","Secure","Hashed passwords, CSRF protection and private per-user data."),("bi-pie-chart","Insightful","Doughnut, bar and line charts plus automatic spending insights."),("bi-bullseye","Budget-aware","Monthly budgets with live progress and overspend warnings."),("bi-filetype-csv","Portable","Filter, search and export your data to CSV anytime.")] %}
+  <div class="col-md-6 col-lg-3"><div class="ef-card tilt p-4 h-100"><i class="bi {{ i }} fs-1 grad"></i><h5 class="mt-2">{{ t }}</h5><p class="text-secondary mb-0">{{ d }}</p></div></div>{% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Profile · ExpenseFlow{% endblock %}
+{% block content %}
+<h3 class="mb-3">Profile & Settings</h3>
+<div class="row g-3">
+  <div class="col-lg-6"><div class="ef-card p-4"><h5>Account</h5><p class="text-secondary">{{ current_user.email }}</p>
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="name"><label class="small">Display name</label><div class="input-group"><input name="name" value="{{ current_user.name }}" class="form-control" required><button class="btn btn-primary">Update</button></div></form></div></div>
+  <div class="col-lg-6"><div class="ef-card p-4"><h5>Change password</h5>
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="password"><input type="password" name="old" class="form-control mb-2" placeholder="Current password" required><input type="password" name="new" minlength="6" class="form-control mb-2" placeholder="New password (6+ chars)" required><button class="btn btn-primary">Change</button></form></div></div>
+  <div class="col-lg-6"><div class="ef-card p-4"><h5>Your data</h5><p class="text-secondary">Download all your expenses as a spreadsheet.</p><a href="{{ url_for('export_csv') }}" class="btn btn-outline-light"><i class="bi bi-download"></i> Export CSV</a></div></div>
+  <div class="col-lg-6"><div class="ef-card p-4 border-danger"><h5 class="text-danger">Danger zone</h5><p class="text-secondary">Permanently delete your account and all expenses.</p>
+    <form method="post" onsubmit="return confirm('Delete your account permanently?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="delete"><button class="btn btn-danger">Delete account</button></form></div></div>
+</div>
+{% endblock %}
