@@ -23,6 +23,18 @@ Doughnut / Bar / Line charts · spending insights · REST API.
 | DELETE | /api/expenses/<id> | Delete |
 | GET | /api/expenses/summary | Dashboard totals, charts data, insights |
 
+## Deploy to Vercel (free tier)
+
+1. Push this project to a GitHub repository and import it in Vercel.
+2. Create a free PostgreSQL database with a provider such as Neon. Copy its connection URL; use the pooled URL if the provider offers one, and ensure it includes `sslmode=require`.
+3. In Vercel, open **Project Settings → Environment Variables** and add:
+	- `APP_ENV` = `production`
+	- `SECRET_KEY` = a long, random secret
+	- `DATABASE_URL` = the PostgreSQL connection URL
+4. Deploy (or redeploy after setting the variables). Vercel will install `requirements.txt`; the app creates its tables on startup.
+
+Do not use the default SQLite database for a Vercel deployment: serverless files are temporary, so SQLite data would not persist between invocations. PostgreSQL is required for saved accounts, expenses, and budgets.
+
 ## Deploy (Render / PythonAnywhere)
 Set `SECRET_KEY` env var. For Render add `gunicorn` to requirements and use start command `gunicorn app:app`.
 
