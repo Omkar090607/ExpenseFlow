@@ -14,9 +14,12 @@ _key = os.environ.get("SECRET_KEY")
 if PROD and not _key:
     raise RuntimeError("SECRET_KEY must be set when APP_ENV=production")
 _db = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+_db = _db.replace("postgres://", "postgresql+psycopg2://", 1).replace(
+    "postgresql://", "postgresql+psycopg2://", 1
+)
 app.config.update(
     SECRET_KEY=_key or "dev-only-key",
-    SQLALCHEMY_DATABASE_URI=_db.replace("postgres://", "postgresql://", 1),
+    SQLALCHEMY_DATABASE_URI=_db,
     SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax", SESSION_COOKIE_SECURE=PROD,
     MAX_CONTENT_LENGTH=1024 * 1024,
 )
