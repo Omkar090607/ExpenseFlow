@@ -23,23 +23,19 @@ Doughnut / Bar / Line charts · spending insights · REST API.
 | DELETE | /api/expenses/<id> | Delete |
 | GET | /api/expenses/summary | Dashboard totals, charts data, insights |
 
-## Deploy to Vercel (free tier)
+## Deploy for free (Render + Neon)
 
-1. Push this project to a GitHub repository and import it in Vercel.
-2. Create a free PostgreSQL database with a provider such as Neon. Copy its connection URL; use the pooled URL if the provider offers one, and ensure it includes `sslmode=require`.
-3. In Vercel, open **Project Settings → Environment Variables** and add:
-	- `APP_ENV` = `production`
-	- `SECRET_KEY` = a long, random secret
-	- `DATABASE_URL` = the PostgreSQL connection URL
-4. Deploy (or redeploy after setting the variables). Vercel will install `requirements.txt`; the app creates its tables on startup.
+The Flask app runs as a free web service on Render. Use a free PostgreSQL database on Neon for persistent accounts, expenses, and budgets; Render's local filesystem is temporary, so the default SQLite database is not suitable for deployment.
 
-Do not use the default SQLite database for a Vercel deployment: serverless files are temporary, so SQLite data would not persist between invocations. PostgreSQL is required for saved accounts, expenses, and budgets.
+1. Push the project to GitHub.
+2. Create a PostgreSQL project on Neon and copy its connection string. Use the pooled connection string if available and ensure it includes `sslmode=require`.
+3. In Render, choose **New + → Blueprint**, connect the GitHub repository, and deploy. Render reads `render.yaml` and creates a free web service. When prompted, enter the Neon connection string for `DATABASE_URL`; `APP_ENV` and a generated `SECRET_KEY` are configured by the blueprint.
+4. Wait for the deployment to finish, then open the service URL shown in Render.
 
-## Deploy (Render / PythonAnywhere)
-Set `SECRET_KEY` env var. For Render add `gunicorn` to requirements and use start command `gunicorn app:app`.
+The free web service may spin down when idle and take a little longer to respond on its first request. Free database plans have provider-specific usage and storage limits; check Neon’s current plan before relying on it for production data.
 
 ## Production checklist
 - Set `APP_ENV=production` and a long random `SECRET_KEY` (see `.env.example`); the app refuses to start without it.
-- Use PostgreSQL via `DATABASE_URL` (Render/Railway/Heroku `postgres://` URLs are handled).
+- Use PostgreSQL via `DATABASE_URL` (`postgres://` URLs are handled).
 - Start with `gunicorn app:app` (see `Procfile`). Serve over HTTPS: secure cookies and HSTS are enabled automatically.
 - Built in: CSRF protection, security headers, hashed passwords, per-user data isolation, error pages.
